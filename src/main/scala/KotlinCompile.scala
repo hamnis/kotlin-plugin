@@ -6,10 +6,9 @@ import java.util.jar.JarEntry
 
 import sbt.Keys.{Classpath, TaskStreams}
 import sbt._
-import sbt.classpath.ClasspathUtilities
+import sbt.io._
 
 import collection.JavaConverters._
-import language.existentials
 import scala.util.Try
 
 /**
@@ -22,8 +21,9 @@ object KotlinCompile {
       in.entries.asScala exists pred
     }
 
-  lazy val kotlinMemo = scalaz.Memo.immutableHashMapMemo[Classpath, KotlinReflection](cp =>
-    KotlinReflection.fromClasspath(cp))
+  lazy val kotlinMemo = scalaz.Memo.immutableHashMapMemo[Classpath, KotlinReflection](
+    cp => KotlinReflection.fromClasspath(cp)
+  )
 
   def compile(options: Seq[String],
               sourceDirs: Seq[File],
@@ -74,7 +74,7 @@ object KotlinCompile {
 
 object KotlinReflection {
   def fromClasspath(cp: Classpath): KotlinReflection = {
-    val cl = ClasspathUtilities.toLoader(cp.map(_.data))
+    val cl = new java.net.URLClassLoader(cp.map(_.data.toURI.toURL).toArray)
     val compilerClass = cl.loadClass("org.jetbrains.kotlin.cli.jvm.K2JVMCompiler")
     val servicesClass = cl.loadClass("org.jetbrains.kotlin.config.Services")
     val messageCollectorClass = cl.loadClass("org.jetbrains.kotlin.cli.common.messages.MessageCollector")
@@ -89,7 +89,7 @@ object KotlinReflection {
           "org.jetbrains.kotlin.cli.common.arguments.CommonToolArguments")
         val clitool = cl.loadClass(
           "org.jetbrains.kotlin.cli.common.CLITool")
-        clitool.getMethod("exec", 
+        clitool.getMethod("exec",
           messageCollectorClass, servicesClass, commonToolArguments)
       }
 

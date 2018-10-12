@@ -1,38 +1,45 @@
 package sbt
 
 import sbt.Keys._
-import sbt.classfile.Analyze
-import sbt.classpath.ClasspathUtilities
-import sbt.inc.{Analysis, IncOptions, IncrementalCompile}
-import xsbti.compile.SingleOutput
+import sbt.internal.inc.{ClassToAPI, Lookup, NoopExternalLookup}
+import sbt.internal.inc.classfile.Analyze
+import sbt.internal.inc.{Analysis, IncrementalCompile}
+import xsbti.compile._
 
 object KotlinTest {
   val kotlinTests = Def.task {
-    val out = ((target in Test).value ** "scala-*").get.head / "test-classes"
-    val srcs = ((sourceDirectory  in Test).value ** "*.kt").get.toList
+    val out = (target in Test).value / "test-classes"
+    val srcs = ((sourceDirectory in Test).value ** "*.kt").get.toList
     val xs = (out ** "*.class").get.toList
-
-    val loader = ClasspathUtilities.toLoader((fullClasspath in Test).value map {
-      _.data
-    })
+    val classpath = (fullClasspath in Test).value
+    val loader = new java.net.URLClassLoader(classpath.map(_.data.toURI.toURL).toArray)
     val log = streams.value.log
     val a0 = IncrementalCompile(
-      srcs.toSet, s => None,
-      (fs, changs, callback) => {
-        def readAPI(source: File, classes: Seq[Class[_]]): Set[String] = {
-          val (api, inherits) = ClassToAPI.process(classes)
-          callback.api(source, api)
-          inherits.map(_.getName)
-        }
+      srcs.toSet,
+      new Lookup with NoopExternalLookup {
+        override def changedClasspathHash: Option[Vector[FileHash]] = None
 
+        override def analyses: Vector[CompileAnalysis] = Vector.empty
+
+        override def lookupOnClasspath(binaryClassName: String): Option[File] = None
+
+        override def lookupAnalysis(binaryClassName: String): Option[CompileAnalysis] = None
+      },
+      (fs, changs, callback, manger) => {
+        def readAPI(source: File, classes: Seq[Class[_]]): Set[(String, String)] = {
+          val (api, mainclasses, inherits) = ClassToAPI.process(classes)
+          api.foreach(p => callback.api(source, p))
+          inherits.map{case (c1, c2) => c1.getName -> c2.getName}
+        }
         Analyze(xs, srcs, log)(callback, loader, readAPI)
       },
-      Analysis.Empty, f => None,
+      Analysis.Empty,
       new SingleOutput {
-        def outputDirectory = out
+        def getOutputDirectory = out
       },
       log,
-      IncOptions.Default)._2
+      IncOptions.of()
+    )._2
     val frameworks = (loadedTestFrameworks in Test).value.values.toList
     log.info(s"Compiling ${srcs.length} Kotlin source to ${out}...")
     Tests.discover(frameworks, a0, log)._1

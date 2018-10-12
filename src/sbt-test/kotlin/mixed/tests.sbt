@@ -1,4 +1,6 @@
-TaskKey[Unit]("check-classes") := {
+val checkClasses = taskKey[Unit]("Check classes")
+
+checkClasses := {
   val classes = (classDirectory in Compile).value
   val classList = (classes ** "*.class").get
   if (classList.size != 5) {

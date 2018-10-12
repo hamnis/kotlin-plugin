@@ -1,5 +1,5 @@
 > debug
 > compile
 > info
-$ exists target/scala-2.10/classes/demo/SimpleKt.class
-> check-classes
+$ exists target/classes/demo/SimpleKt.class
+> checkClasses

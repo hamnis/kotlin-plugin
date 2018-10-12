@@ -1,7 +1,7 @@
 package kotlin
 
 import Keys._
-import com.hanhuy.sbt.bintray.UpdateChecker
+//import com.hanhuy.sbt.bintray.UpdateChecker
 import sbt._
 import sbt.Keys._
 import sbt.plugins.JvmPlugin
@@ -24,7 +24,7 @@ object KotlinPlugin extends AutoPlugin {
       "org.jetbrains.kotlin" % "kotlin-compiler-embeddable" % kotlinVersion.value % KotlinInternal.name
     },
     managedClasspath in KotlinInternal := Classpaths.managedJars(KotlinInternal, classpathTypes.value, update.value),
-    updateCheck in Kotlin := {
+    /*updateCheck in Kotlin := {
       val log = streams.value.log
       UpdateChecker("pfn", "sbt-plugins", "kotlin-plugin") {
         case Left(t) =>
@@ -41,9 +41,11 @@ object KotlinPlugin extends AutoPlugin {
             }
           }
       }
-    },
+    },*/
+    crossPaths := false,
     kotlinVersion := "1.1.4-3",
     kotlincOptions := Nil,
+    autoScalaLibrary := false,
     kotlincPluginOptions := Nil,
     watchSources     ++= {
       import language.postfixOps
@@ -59,8 +61,8 @@ object KotlinPlugin extends AutoPlugin {
   // public to allow kotlin compile in other configs beyond Compile and Test
   val kotlinCompileSettings = List(
     unmanagedSourceDirectories += kotlinSource.value,
-    kotlincOptions := (kotlincOptions in This).value,
-    kotlincPluginOptions := (kotlincPluginOptions in This).value,
+    kotlincOptions := (kotlincOptions in Compile).value,
+    kotlincPluginOptions := (kotlincPluginOptions in Compile).value,
     kotlinCompile := Def.task {
         KotlinCompile.compile(kotlincOptions.value,
           sourceDirectories.value, kotlincPluginOptions.value,

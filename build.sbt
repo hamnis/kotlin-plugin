@@ -1,42 +1,34 @@
 //import ScriptedPlugin._
-import bintray.Keys._
+//import bintray.Keys._
 
 name := "kotlin-plugin"
 
 organization := "com.hanhuy.sbt"
 
-version := "1.0.9"
+version := "1.1-SNAPSHOT"
 
 scalacOptions ++= Seq("-deprecation","-Xlint","-feature")
 
-libraryDependencies ++=
-  "com.hanhuy.sbt" %% "bintray-update-checker" % "0.2" ::
-  Nil
-
-sbtPlugin := true
+enablePlugins(SbtPlugin)
 
 // build info plugin
-
-buildInfoSettings
-
-sourceGenerators in Compile += buildInfo
-
 buildInfoPackage := "kotlin"
 
 // bintray
-bintrayPublishSettings
+//bintrayPublishSettings
 
-repository in bintray := "sbt-plugins"
+//repository in bintray := "sbt-plugins"
 
 publishMavenStyle := false
 
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 
-bintrayOrganization in bintray := None
+//bintrayOrganization in bintray := None
 
 // scripted
-scriptedSettings
+//scriptedSettings
 
-scriptedLaunchOpts ++= "-Xmx1024m" ::
-  "-Dplugin.version=" + version.value ::
-  Nil
+libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.26"
+
+scriptedLaunchOpts ++= "-Xmx1024m" :: "-Dplugin.version=" + version.value :: Nil
+scriptedBufferLog := false
