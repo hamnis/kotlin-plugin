@@ -12,7 +12,7 @@ scalacOptions ++= Seq("-deprecation","-Xlint","-feature")
 enablePlugins(SbtPlugin)
 
 // build info plugin
-buildInfoPackage := "kotlin"
+buildInfoPackage := "kotlincompiler"
 
 // bintray
 //bintrayPublishSettings

@@ -21,7 +21,7 @@ object Keys {
     "org.jetbrains.kotlin" % ("kotlin-" + name) % kotlinVersion.value
 
   def kotlinPlugin(name: String) = sbt.Keys.libraryDependencies +=
-    "org.jetbrains.kotlin" % ("kotlin-" + name) % kotlinVersion.value % "compile-internal"
+    "org.jetbrains.kotlin" % ("kotlin-" + name) % kotlinVersion.value % KotlinInternal.name
 
   def kotlinClasspath(config: Configuration, classpathKey: Def.Initialize[sbt.Keys.Classpath]): Setting[_] =
     kotlincOptions in config ++= {
