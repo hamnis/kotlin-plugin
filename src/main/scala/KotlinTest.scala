@@ -5,6 +5,7 @@ import sbt.internal.inc.{ClassToAPI, Lookup, NoopExternalLookup}
 import sbt.internal.inc.classfile.Analyze
 import sbt.internal.inc.{Analysis, IncrementalCompile}
 import xsbti.compile._
+import sbt.internal.inc.classpath.ClasspathUtilities
 
 object KotlinTest {
   val kotlinTests = Def.task {
@@ -12,7 +13,7 @@ object KotlinTest {
     val srcs = ((sourceDirectory in Test).value ** "*.kt").get.toList
     val xs = (out ** "*.class").get.toList
     val classpath = (fullClasspath in Test).value
-    val loader = new java.net.URLClassLoader(classpath.map(_.data.toURI.toURL).toArray)
+    val loader = ClasspathUtilities.toLoader(classpath.map(_.data))
     val log = streams.value.log
     val a0 = IncrementalCompile(
       srcs.toSet,

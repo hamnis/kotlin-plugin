@@ -10,6 +10,7 @@ import sbt.io._
 
 import collection.JavaConverters._
 import scala.util.Try
+import sbt.internal.inc.classpath.ClasspathUtilities
 
 /**
  * @author pfnguyen
@@ -74,7 +75,7 @@ object KotlinCompile {
 
 object KotlinReflection {
   def fromClasspath(cp: Classpath): KotlinReflection = {
-    val cl = new java.net.URLClassLoader(cp.map(_.data.toURI.toURL).toArray)
+    val cl = ClasspathUtilities.toLoader(cp.map(_.data))
     val compilerClass = cl.loadClass("org.jetbrains.kotlin.cli.jvm.K2JVMCompiler")
     val servicesClass = cl.loadClass("org.jetbrains.kotlin.config.Services")
     val messageCollectorClass = cl.loadClass("org.jetbrains.kotlin.cli.common.messages.MessageCollector")
