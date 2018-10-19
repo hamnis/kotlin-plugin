@@ -1,4 +1,4 @@
-package kotlin
+package kotlincompiler
 
 import sbt._
 

@@ -1,4 +1,4 @@
-package kotlin
+package kotlincompiler
 
 import java.io.File
 import java.lang.reflect.{Field, Method}
